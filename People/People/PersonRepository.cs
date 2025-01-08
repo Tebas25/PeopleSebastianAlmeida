@@ -1,5 +1,6 @@
 ﻿using SQLite;
 using People.Models;
+//using Android.Health.Connect;
 
 namespace People;
 
@@ -9,13 +10,13 @@ public class PersonRepository
 
     public string StatusMessage { get; set; }
 
-    private SQLiteConnection salmeida_conexion;
+    private SQLiteAsyncConnection salmeida_conexion;
     
-    private void Init()
+    private async Task Init()
     {
         if (salmeida_conexion != null){ return; }
-        salmeida_conexion = new SQLiteConnection(_dbPath);
-        salmeida_conexion.CreateTable<Person>();
+        salmeida_conexion = new SQLiteAsyncConnection(_dbPath);
+        await salmeida_conexion.CreateTableAsync<Person>();
     }
 
     public PersonRepository(string dbPath)
@@ -23,7 +24,7 @@ public class PersonRepository
         _dbPath = dbPath;                        
     }
 
-    public void AddNewPerson(string name)
+    public async Task AddNewPerson(string name)
     {            
         int result = 0;
         try
@@ -35,7 +36,7 @@ public class PersonRepository
                 throw new Exception("Valid name required");
 
             // TODO: Insert the new person into the database
-            result = salmeida_conexion.Insert(new Person { Name = name });
+            result = await salmeida_conexion.InsertAsync(new Person { Name = name });
 
             StatusMessage = string.Format("{0} record(s) added (Name: {1})", result, name);
         }
@@ -46,13 +47,13 @@ public class PersonRepository
 
     }
 
-    public List<Person> GetAllPeople()
+    public async Task<List<Person>> GetAllPeople()
     {
         // TODO: Init then retrieve a list of Person objects from the database into a list
         try
         {
-            Init();
-            return salmeida_conexion.Table<Person>().ToList();
+            await Init();
+            return await salmeida_conexion.Table<Person>().ToListAsync();
         }
         catch (Exception ex)
         {
@@ -60,5 +61,11 @@ public class PersonRepository
         }
 
         return new List<Person>();
+    }
+    
+    public async Task DeletePerson(Person persona)
+    {
+        await Init();
+        await salmeida_conexion.DeleteAsync(persona);
     }
 }

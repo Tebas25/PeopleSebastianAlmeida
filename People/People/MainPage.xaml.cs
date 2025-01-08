@@ -11,21 +11,32 @@ public partial class MainPage : ContentPage
 		InitializeComponent();
 	}
 
-    public void OnNewButtonClicked(object sender, EventArgs args)
+    public async void OnNewButtonClicked(object sender, EventArgs args)
     {
         statusMessage.Text = "";
 
-        App.PersonRepo.AddNewPerson(newPerson.Text);
+        await App.PersonRepo.AddNewPerson(newPerson.Text);
         statusMessage.Text = App.PersonRepo.StatusMessage;
     }
 
-    public void OnGetButtonClicked(object sender, EventArgs args)
+    public async void OnGetButtonClicked(object sender, EventArgs args)
     {
         statusMessage.Text = "";
 
-        List<Person> people = App.PersonRepo.GetAllPeople();
-        peopleList.ItemsSource = people;
+        List<Person> people = await App.PersonRepo.GetAllPeople();
+        salmeida_ListaPersonas.ItemsSource = people;
     }
 
+    private async void Button_Clicked(object sender, EventArgs e)
+    {
+        if (sender is Button button && button.CommandParameter is Person personaEliminar)
+        {
+            await App.PersonRepo.DeletePerson(personaEliminar);
+            List<Person> personas = await App.PersonRepo.GetAllPeople();
+            salmeida_ListaPersonas.ItemsSource = personas;
+            await DisplayAlert("Confirmación", "Sebastian Almeida acaba de eliminar un registro", "OK");
+        }
+        
+    }
 }
 
